@@ -1,0 +1,17 @@
+# .NET build output
+**/bin/
+**/obj/
+**/tasktracker.db*
+
+# Node dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Local environment files
+frontend/.env
+backend/**/appsettings.Local.json
+
+# IDE files
+.DS_Store
+.idea/
+.vscode/
