@@ -14,6 +14,7 @@ public class CategoriesController(ICategoryService service) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoryResponse>> Create(CategoryRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest(new { message = "Category name is required." });
         if (await service.ExistsByNameAsync(request.Name)) return Conflict(new { message = "A category with that name already exists." });
         var category = await service.CreateAsync(request);
         return Created($"/api/categories/{category!.Id}", category);

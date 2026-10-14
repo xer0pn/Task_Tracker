@@ -18,6 +18,7 @@ public class TasksController(ITaskService service, ICategoryService categories) 
     [HttpPost]
     public async Task<ActionResult<TaskResponse>> Create(TaskRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest(new { message = "Title is required." });
         if (!await CategoryExists(request.CategoryId)) return BadRequest(new { message = "The selected category does not exist." });
         var task = await service.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
@@ -26,6 +27,7 @@ public class TasksController(ITaskService service, ICategoryService categories) 
     [HttpPut("{id:int}")]
     public async Task<ActionResult<TaskResponse>> Update(int id, TaskRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest(new { message = "Title is required." });
         if (!await CategoryExists(request.CategoryId)) return BadRequest(new { message = "The selected category does not exist." });
         return (await service.UpdateAsync(id, request)) is { } task ? Ok(task) : NotFound(new { message = "Task not found." });
     }

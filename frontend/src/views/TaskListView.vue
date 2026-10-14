@@ -33,6 +33,7 @@ function formatDate(date) { return date ? new Date(date).toLocaleDateString() : 
 function badgeClass(value) { return value.toLowerCase().replace('inprogress', 'in-progress') }
 
 watch(filters, resetToFirstPage, { deep: true })
+watch(page, loadTasks)
 onMounted(() => Promise.all([loadCategories(), loadTasks()]))
 </script>
 
