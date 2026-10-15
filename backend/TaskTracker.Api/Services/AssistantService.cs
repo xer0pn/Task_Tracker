@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -73,19 +72,12 @@ public sealed class AssistantService(IHttpClientFactory httpClientFactory, IConf
             throw new AssistantUnavailableException("The assistant returned an invalid response.");
         }
 
-        if (string.IsNullOrWhiteSpace(payload.Title) || payload.Title.Length > 200 || string.IsNullOrWhiteSpace(payload.CategoryName))
-            throw new AssistantUnavailableException("The assistant returned an invalid task draft.");
-
-        var priority = NormalizePriority(payload.Priority);
-        var dueDate = ParseDate(payload.DueDate);
-        var category = categoryList.FirstOrDefault(item => string.Equals(item.Name.Trim(), payload.CategoryName.Trim(), StringComparison.OrdinalIgnoreCase));
-
-        return new AssistantTaskDraft(payload.Title.Trim(), payload.Description?.Trim(), priority, dueDate, payload.CategoryName.Trim(), category?.Id);
+        return AssistantDraftNormalizer.Normalize(payload, categoryList, prompt, DateTime.UtcNow);
     }
 
     private static string BuildSystemPrompt(IReadOnlyCollection<string> categoryNames, string userPrompt)
     {
-        var outputLanguage = ContainsArabic(userPrompt) ? "Arabic" : "English";
+        var outputLanguage = AssistantDraftNormalizer.OutputLanguage(userPrompt);
         return $"""
         You create a draft for a task tracker. Return only the requested JSON schema.
         Extract one concise task from the user's message. Never invent a category silently.
@@ -97,17 +89,6 @@ public sealed class AssistantService(IHttpClientFactory httpClientFactory, IConf
         Preserve the user's language, including Arabic, in title and description.
         """;
     }
-
-    private static bool ContainsArabic(string value) => value.Any(character => character is >= '\u0600' and <= '\u06ff' or >= '\u0750' and <= '\u077f');
-
-    private static TaskPriority NormalizePriority(string value) => value.Trim().ToLowerInvariant() switch
-    {
-        "high" or "urgent" or "critical" => TaskPriority.High,
-        "low" or "minor" => TaskPriority.Low,
-        _ => TaskPriority.Medium
-    };
-
-    private static DateTime? ParseDate(string? value) => DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) ? date : null;
 
     private static string? FindOutputText(JsonElement root)
     {
