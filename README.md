@@ -88,4 +88,4 @@ cd ../../frontend
 npm run build
 ```
 
-The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies paging, successful creation, validation errors, status updates, and duplicate-category conflicts.
+The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, and duplicate-category conflicts.
