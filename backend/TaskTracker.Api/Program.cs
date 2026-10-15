@@ -10,6 +10,8 @@ builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializ
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAssistantService, AssistantService>();
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => policy
     .WithOrigins("http://localhost:5173")
     .AllowAnyHeader()

@@ -10,6 +10,20 @@ A small full-stack task tracker built for the developer take-home assignment. It
 
 SQLite is created as a local `tasktracker.db` file, so no separate database server is required.
 
+## Optional AI assistant
+
+The dashboard includes an optional assistant that turns a natural-language request into a reviewable task draft. It does not write to the database until the user confirms the draft.
+
+To enable it locally, copy the root environment template and add a key:
+
+```bash
+cp .env.example .env
+```
+
+The Docker Compose configuration passes `OPENAI_API_KEY` and `OPENAI_MODEL` to the API. Without a key, the assistant returns a controlled temporary-unavailable state; the core task tracker continues to work normally.
+
+The assistant uses structured JSON output with a strict schema. The API still validates and normalizes priority casing/synonyms, parses dates, and maps categories case-insensitively. A category that does not exist is never created automatically: the draft asks the user to choose an existing category before saving.
+
 ## Run the API
 
 ```bash
@@ -89,7 +103,7 @@ Controllers are used instead of Minimal APIs because the application has several
 - Category deletion is not exposed because it was not required and could orphan tasks.
 - Dates are stored as UTC timestamps by the API and displayed in the browser's local format.
 - Page size is limited to 50 records per request.
-- Bonus features are intentionally not included in the core implementation.
+- AI task drafting is optional and depends on an OpenAI API key; normal task creation remains available without it.
 
 ## AI usage
 
@@ -108,4 +122,4 @@ cd ../../frontend
 npm run build
 ```
 
-The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, and duplicate-category conflicts.
+The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, duplicate-category conflicts, and assistant input validation.

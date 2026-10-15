@@ -7,6 +7,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: 8080
       ConnectionStrings__DefaultConnection: Data Source=/app/data/tasktracker.db
+      OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      OpenAI__Model: ${OPENAI_MODEL:-gpt-4o-mini}
     ports:
       - "5172:8080"
     volumes:
