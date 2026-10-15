@@ -13,6 +13,11 @@ const assistantLoading = ref(false)
 const assistantSaving = ref(false)
 const assistantError = ref('')
 
+const assistantRtl = computed(() => {
+  const text = `${assistantPrompt.value} ${assistantDraft.value?.title ?? ''} ${assistantDraft.value?.description ?? ''}`
+  return /[\u0600-\u06ff\u0750-\u077f]/.test(text)
+})
+
 const counts = computed(() => ({
   total: tasks.value.length,
   todo: tasks.value.filter((task) => task.status === 'Todo').length,
@@ -98,7 +103,7 @@ onMounted(loadDashboard)
   </section>
 
   <p v-if="error" class="alert error">{{ error }}</p>
-  <section class="card assistant-panel">
+  <section class="card assistant-panel" :dir="assistantRtl ? 'rtl' : 'ltr'">
     <div class="panel-heading"><div><p class="eyebrow">Optional assistant</p><h2>Describe a task</h2></div><span class="assistant-note">Draft first, save after review</span></div>
     <form class="assistant-form" @submit.prevent="createAssistantDraft">
       <label class="sr-only" for="assistant-prompt">Describe a task</label>
