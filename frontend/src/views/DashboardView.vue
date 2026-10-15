@@ -107,7 +107,7 @@ onMounted(loadDashboard)
     </form>
     <p v-if="assistantError" class="alert error">{{ assistantError }}</p>
     <div v-if="assistantDraft" class="assistant-draft">
-      <div><span class="summary-label">Draft preview</span><strong>{{ assistantDraft.title }}</strong><p v-if="assistantDraft.description">{{ assistantDraft.description }}</p><p>Suggested category: {{ assistantDraft.categoryName }}</p></div>
+      <div><span class="summary-label">Draft preview</span><strong dir="auto">{{ assistantDraft.title }}</strong><p v-if="assistantDraft.description" dir="auto">{{ assistantDraft.description }}</p><p dir="auto">Suggested category: {{ assistantDraft.categoryName }}</p></div>
       <div class="assistant-fields">
         <label>Priority<select v-model="assistantDraft.priority"><option>Low</option><option>Medium</option><option>High</option></select></label>
         <label>Category<select v-model="assistantDraft.categoryId"><option :value="null">Choose a category</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select></label>

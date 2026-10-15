@@ -23,7 +23,7 @@ public sealed class AssistantService(IHttpClientFactory httpClientFactory, IConf
             model = configuration["OpenAI:Model"] ?? Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-4o-mini",
             input = new object[]
             {
-                new { role = "system", content = new[] { new { type = "input_text", text = BuildSystemPrompt(categoryNames) } } },
+                new { role = "system", content = new[] { new { type = "input_text", text = BuildSystemPrompt(categoryNames, prompt) } } },
                 new { role = "user", content = new[] { new { type = "input_text", text = prompt.Trim() } } }
             },
             text = new
@@ -83,15 +83,22 @@ public sealed class AssistantService(IHttpClientFactory httpClientFactory, IConf
         return new AssistantTaskDraft(payload.Title.Trim(), payload.Description?.Trim(), priority, dueDate, payload.CategoryName.Trim(), category?.Id);
     }
 
-    private static string BuildSystemPrompt(IReadOnlyCollection<string> categoryNames) => $"""
+    private static string BuildSystemPrompt(IReadOnlyCollection<string> categoryNames, string userPrompt)
+    {
+        var outputLanguage = ContainsArabic(userPrompt) ? "Arabic" : "English";
+        return $"""
         You create a draft for a task tracker. Return only the requested JSON schema.
         Extract one concise task from the user's message. Never invent a category silently.
+        All human-readable fields must be written in {outputLanguage}. Do not switch languages. JSON property names and priority enum values must remain exactly as defined by the schema.
         The existing categories are: {string.Join(", ", categoryNames)}.
         categoryName must be one of those names when possible; if the user asks for a category not in that list, return the user's category name unchanged so the application can ask them to choose an existing category.
         priority must be exactly one of Low, Medium, High. Normalize capitalization and synonyms: urgent/critical become High, normal/regular become Medium, and minor becomes Low.
         dueDate must be an ISO-8601 date or null. Resolve relative dates from today's date, {DateTime.UtcNow:yyyy-MM-dd}.
         Preserve the user's language, including Arabic, in title and description.
         """;
+    }
+
+    private static bool ContainsArabic(string value) => value.Any(character => character is >= '\u0600' and <= '\u06ff' or >= '\u0750' and <= '\u077f');
 
     private static TaskPriority NormalizePriority(string value) => value.Trim().ToLowerInvariant() switch
     {
