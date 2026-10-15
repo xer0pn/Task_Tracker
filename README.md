@@ -81,6 +81,11 @@ AI tools were used to help plan the architecture, draft repetitive scaffolding, 
 cd backend/TaskTracker.Api
 dotnet build
 
+cd ../TaskTracker.Api.Tests
+dotnet test
+
 cd ../../frontend
 npm run build
 ```
+
+The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies paging, successful creation, validation errors, status updates, and duplicate-category conflicts.

@@ -40,3 +40,6 @@ using (var scope = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+
+// Makes the top-level application available to WebApplicationFactory integration tests.
+public partial class Program;
