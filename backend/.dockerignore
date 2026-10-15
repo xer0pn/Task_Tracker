@@ -1,0 +1,4 @@
+**/bin/
+**/obj/
+**/tasktracker.db*
+.git/

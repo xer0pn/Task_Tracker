@@ -40,6 +40,26 @@ npm run dev
 
 Open the Vite URL shown in the terminal, normally `http://localhost:5173`.
 
+## Run with Docker Compose
+
+Start Docker Desktop, then run this from the repository root:
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:5173`. The frontend container serves the Vue app and proxies `/api` requests to the API container. SQLite is stored in the named `tasktracker-data` volume, so the database survives container restarts. The API applies the checked-in migration and seed data when it starts.
+
+After changing code, rebuild the affected service:
+
+```bash
+docker compose up --build frontend  # frontend changes
+docker compose up --build api       # backend changes
+docker compose up --build           # changes affecting both services
+```
+
+Stop the containers with `Ctrl+C`. To run them in the background, use `docker compose up --build -d`, then stop them with `docker compose down`.
+
 ## Project structure
 
 - `backend/TaskTracker.Api/Controllers` contains HTTP routing and response behavior.
