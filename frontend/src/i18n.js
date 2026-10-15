@@ -1,0 +1,48 @@
+import { computed, ref } from 'vue'
+
+const savedLanguage = typeof window !== 'undefined' ? window.localStorage.getItem('task-tracker-language') : null
+export const language = ref(savedLanguage === 'ar' ? 'ar' : 'en')
+export const direction = computed(() => language.value === 'ar' ? 'rtl' : 'ltr')
+export const isArabic = computed(() => language.value === 'ar')
+
+const messages = {
+  en: {
+    dashboard: 'Dashboard', tasks: 'Tasks', categories: 'Categories', organization: 'Organization', workspace: 'Workspace', overview: 'Overview',
+    newTask: 'New task', taskDetails: 'Task details', createTask: 'Create task', editTask: 'Edit task', addCategory: 'Add category', allCategories: 'All categories',
+    groupTasks: 'Group tasks so they are easier to find.', trackerSummary: 'A quick read on the work in your tracker.', keepMoving: 'Keep the important work moving.',
+    addDetails: 'Add the details needed to make the next step clear.', name: 'Name', title: 'Title', description: 'Description', status: 'Status', priority: 'Priority', category: 'Category', dueDate: 'Due date',
+    saveTask: 'Save task', saving: 'Saving...', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', previous: 'Previous', next: 'Next', page: 'Page', of: 'of',
+    search: 'Search task titles...', allStatuses: 'All statuses', allCategories: 'All categories', task: 'task', tasksPlural: 'tasks', noTasks: 'No tasks found',
+    filterHint: 'Try changing your filters or create a new task.', loadingTasks: 'Loading tasks...', loadingDashboard: 'Loading dashboard...', selectCategory: 'Select a category',
+    whatNeedsDone: 'What needs to be done?', usefulContext: 'Add useful context (optional)', exampleHome: 'e.g. Home',
+    overviewLabel: 'Overview', totalTasks: 'Total tasks', toDo: 'To do', inProgress: 'In progress', overdue: 'Overdue', acrossCategories: 'Across all categories', readyToStart: 'Ready to start', currentlyActive: 'Currently active', openPastDue: 'Open tasks past due',
+    optionalAssistant: 'Optional assistant', describeTask: 'Describe a task', draftFirst: 'Draft first, save after review', assistantPlaceholder: 'Example: Prepare the interview notes next Friday, high priority', thinking: 'Thinking...', createDraft: 'Create draft', draftPreview: 'Draft preview', suggestedCategory: 'Suggested category', chooseCategory: 'Choose a category', discard: 'Discard',
+    nextUp: 'Next up', upcomingWork: 'Upcoming work', viewAll: 'View all', noUpcoming: 'No upcoming tasks.', distribution: 'Distribution', byCategory: 'By category', manage: 'Manage',
+    adding: 'Adding...', categoryRequired: 'Category name is required.', titleRequired: 'Title is required.', unableLoad: 'Unable to load the form.', unableSave: 'Unable to save the task.', unableCategories: 'Unable to load categories.', unableTasks: 'Unable to load tasks.', unableCreateCategory: 'Unable to create category.', unableAssistant: 'Unable to create an AI task draft.', unableSaveDraft: 'Unable to save the drafted task.', chooseExisting: 'Choose an existing category before saving this task.', assistantUnavailable: 'The AI assistant is temporarily unavailable. Try again later.', dismiss: 'Dismiss',
+    statusTodo: 'To do', statusInProgress: 'In progress', statusDone: 'Done', low: 'Low', medium: 'Medium', high: 'High',
+  },
+  ar: {
+    dashboard: 'لوحة التحكم', tasks: 'المهام', categories: 'التصنيفات', organization: 'التنظيم', workspace: 'مساحة العمل', overview: 'نظرة عامة',
+    newTask: 'مهمة جديدة', taskDetails: 'تفاصيل المهمة', createTask: 'إنشاء مهمة', editTask: 'تعديل المهمة', addCategory: 'إضافة تصنيف', allCategories: 'كل التصنيفات',
+    groupTasks: 'جمّع المهام ليسهل العثور عليها.', trackerSummary: 'نظرة سريعة على العمل في متتبعك.', keepMoving: 'حافظ على تقدم العمل المهم.',
+    addDetails: 'أضف التفاصيل اللازمة لتوضيح الخطوة التالية.', name: 'الاسم', title: 'العنوان', description: 'الوصف', status: 'الحالة', priority: 'الأولوية', category: 'التصنيف', dueDate: 'تاريخ الاستحقاق',
+    saveTask: 'حفظ المهمة', saving: 'جارٍ الحفظ...', cancel: 'إلغاء', delete: 'حذف', edit: 'تعديل', previous: 'السابق', next: 'التالي', page: 'صفحة', of: 'من',
+    search: 'ابحث في عناوين المهام...', allStatuses: 'كل الحالات', allCategories: 'كل التصنيفات', task: 'مهمة', tasksPlural: 'مهام', noTasks: 'لم يتم العثور على مهام',
+    filterHint: 'جرّب تغيير الفلاتر أو أنشئ مهمة جديدة.', loadingTasks: 'جارٍ تحميل المهام...', loadingDashboard: 'جارٍ تحميل لوحة التحكم...', selectCategory: 'اختر تصنيفًا',
+    whatNeedsDone: 'ما الذي يجب إنجازه؟', usefulContext: 'أضف سياقًا مفيدًا (اختياري)', exampleHome: 'مثال: المنزل',
+    overviewLabel: 'نظرة عامة', totalTasks: 'إجمالي المهام', toDo: 'للإنجاز', inProgress: 'قيد التنفيذ', overdue: 'متأخرة', acrossCategories: 'في كل التصنيفات', readyToStart: 'جاهزة للبدء', currentlyActive: 'نشطة حاليًا', openPastDue: 'مهام مفتوحة تجاوزت موعدها',
+    optionalAssistant: 'المساعد الاختياري', describeTask: 'صف مهمة', draftFirst: 'راجع المسودة قبل الحفظ', assistantPlaceholder: 'مثال: جهّز ملاحظات المقابلة يوم الجمعة القادم بأولوية عالية', thinking: 'جارٍ التفكير...', createDraft: 'إنشاء مسودة', draftPreview: 'معاينة المسودة', suggestedCategory: 'التصنيف المقترح', chooseCategory: 'اختر تصنيفًا', discard: 'تجاهل',
+    nextUp: 'التالي', upcomingWork: 'العمل القادم', viewAll: 'عرض الكل', noUpcoming: 'لا توجد مهام قادمة.', distribution: 'التوزيع', byCategory: 'حسب التصنيف', manage: 'إدارة',
+    adding: 'جارٍ الإضافة...', categoryRequired: 'اسم التصنيف مطلوب.', titleRequired: 'العنوان مطلوب.', unableLoad: 'تعذر تحميل النموذج.', unableSave: 'تعذر حفظ المهمة.', unableCategories: 'تعذر تحميل التصنيفات.', unableTasks: 'تعذر تحميل المهام.', unableCreateCategory: 'تعذر إنشاء التصنيف.', unableAssistant: 'تعذر إنشاء مسودة مهمة بالذكاء الاصطناعي.', unableSaveDraft: 'تعذر حفظ المهمة المسودة.', chooseExisting: 'اختر تصنيفًا موجودًا قبل حفظ المهمة.', assistantUnavailable: 'المساعد الذكي غير متاح مؤقتًا. حاول مرة أخرى لاحقًا.', dismiss: 'إغلاق',
+    statusTodo: 'للإنجاز', statusInProgress: 'قيد التنفيذ', statusDone: 'مكتملة', low: 'منخفضة', medium: 'متوسطة', high: 'عالية',
+  },
+}
+
+export function t(key) { return messages[language.value][key] ?? messages.en[key] ?? key }
+export function statusLabel(status) { return t({ Todo: 'statusTodo', InProgress: 'statusInProgress', Done: 'statusDone' }[status] ?? status) }
+export function priorityLabel(priority) { return t(priority.toLowerCase()) }
+export function setLanguage(next) {
+  language.value = next
+  window.localStorage.setItem('task-tracker-language', next)
+}
+export function toggleLanguage() { setLanguage(language.value === 'en' ? 'ar' : 'en') }
