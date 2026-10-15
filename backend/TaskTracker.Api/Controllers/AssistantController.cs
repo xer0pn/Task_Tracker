@@ -9,6 +9,7 @@ namespace TaskTracker.Api.Controllers;
 public class AssistantController(IAssistantService service) : ControllerBase
 {
     [HttpPost("tasks")]
+    [HttpPost("~/api/tasks/ai-suggest")]
     public async Task<ActionResult<AssistantTaskDraft>> CreateTaskDraft(AssistantRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Prompt)) return BadRequest(new { message = "Describe the task you want to create." });

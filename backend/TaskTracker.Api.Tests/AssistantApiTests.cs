@@ -17,4 +17,12 @@ public sealed class AssistantApiTests : IClassFixture<ApiFactory>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task CreateTaskDraft_ExposesTakeHomeRoute()
+    {
+        var response = await client.PostAsJsonAsync("/api/tasks/ai-suggest", new { prompt = "   " });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

@@ -1,6 +1,6 @@
 # Task Tracker
 
-A small full-stack task tracker built for the developer take-home assignment. It uses a Vue 3 frontend, an ASP.NET Core Web API, EF Core, and SQLite.
+A small full-stack task tracker built for the developer take-home assignment. It uses a Vue 3 frontend, an ASP.NET Core Web API, EF Core, and SQLite. The project favors a complete, explainable end-to-end flow over unnecessary framework complexity.
 
 ## Requirements
 
@@ -9,6 +9,24 @@ A small full-stack task tracker built for the developer take-home assignment. It
 - npm 10 or later
 
 SQLite is created as a local `tasktracker.db` file, so no separate database server is required.
+
+## Quick start with Docker
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:5173](http://localhost:5173). The frontend container serves the Vue app and proxies `/api` requests to the API container on port 5172. The API applies the checked-in migration and seed data when it starts.
+
+To run in the background:
+
+```bash
+docker compose up --build -d
+```
+
+Stop the stack with `docker compose down`. The SQLite database is stored in the named `tasktracker-data` volume and survives normal container restarts. Use `docker compose down -v` only when you intentionally want to delete the Docker database.
 
 ## Optional AI assistant
 
@@ -20,9 +38,11 @@ To enable it locally, copy the root environment template and add a key:
 cp .env.example .env
 ```
 
-The Docker Compose configuration passes `OPENAI_API_KEY` and `OPENAI_MODEL` to the API. Without a key, the assistant returns a controlled temporary-unavailable state; the core task tracker continues to work normally.
+The Docker Compose configuration passes `OPENAI_API_KEY` and `OPENAI_MODEL` to the API. Without a key or available API quota, the assistant returns a controlled temporary-unavailable state; the core task tracker continues to work normally.
 
 The assistant uses structured JSON output with a strict schema. The API still validates and normalizes priority casing/synonyms, parses dates, and maps categories case-insensitively. A category that does not exist is never created automatically: the draft asks the user to choose an existing category before saving.
+
+The bonus endpoint is `POST /api/tasks/ai-suggest`. The older `/api/assistant/tasks` route remains as a compatibility alias. The assistant returns a draft only; the user reviews it and confirms before the normal task-create endpoint is called.
 
 ## Run the API
 
@@ -32,7 +52,7 @@ dotnet restore
 dotnet run
 ```
 
-The API runs at `http://localhost:5172`. OpenAPI is available at `http://localhost:5172/openapi/v1.json` in development.
+The API runs at `http://localhost:5172`. OpenAPI is available at `http://localhost:5172/openapi/v1.json` whenever the API is running.
 
 The application applies the checked-in EF Core migration on startup and seeds three categories and ten sample tasks. To create or apply migrations manually:
 
@@ -43,7 +63,7 @@ dotnet ef database update
 
 ## Run the frontend
 
-In a second terminal:
+In a second terminal, if you are not using Docker:
 
 ```bash
 cd frontend
@@ -54,17 +74,7 @@ npm run dev
 
 Open the Vite URL shown in the terminal, normally `http://localhost:5173`.
 
-## Run with Docker Compose
-
-Start Docker Desktop, then run this from the repository root:
-
-```bash
-docker compose up --build
-```
-
-Open `http://localhost:5173`. The frontend container serves the Vue app and proxies `/api` requests to the API container. SQLite is stored in the named `tasktracker-data` volume, so the database survives container restarts. The API applies the checked-in migration and seed data when it starts.
-
-After changing code, rebuild the affected service:
+After changing code, rebuild the affected service with Docker:
 
 ```bash
 docker compose up --build frontend  # frontend changes
@@ -72,7 +82,7 @@ docker compose up --build api       # backend changes
 docker compose up --build           # changes affecting both services
 ```
 
-Stop the containers with `Ctrl+C`. To run them in the background, use `docker compose up --build -d`, then stop them with `docker compose down`.
+The frontend includes an English/Arabic toggle. Arabic changes the whole application to RTL, including navigation, forms, tables, dashboard panels, and the AI assistant. The selected language is saved in browser local storage.
 
 ## Project structure
 
@@ -82,6 +92,7 @@ Stop the containers with `Ctrl+C`. To run them in the background, use `docker co
 - `backend/TaskTracker.Api/Data` configures EF Core, relationships, and seed data.
 - `backend/TaskTracker.Api/Services` contains database and business operations.
 - `frontend/src/views` contains the task and category screens.
+- `frontend/src/i18n.js` contains the small English/Arabic translation dictionary and global direction state.
 - `frontend/src/services/api.js` is the only frontend HTTP integration point.
 
 Controllers are used instead of Minimal APIs because the application has several related endpoints, DTOs, validation rules, and service dependencies. The explicit controller structure makes responsibilities easier to review.
@@ -95,6 +106,7 @@ Controllers are used instead of Minimal APIs because the application has several
 - Loading, empty, and API error states
 - SQLite persistence with EF Core migrations and seed data
 - OpenAPI documentation, CORS, and global error handling
+- English/Arabic toggle with full RTL layout support
 
 ## Assumptions and limitations
 
@@ -104,6 +116,7 @@ Controllers are used instead of Minimal APIs because the application has several
 - Dates are stored as UTC timestamps by the API and displayed in the browser's local format.
 - Page size is limited to 50 records per request.
 - AI task drafting is optional and depends on an OpenAI API key; normal task creation remains available without it.
+- Authentication is not included because it was an optional bonus outside the core scope.
 
 ## AI usage
 
@@ -112,14 +125,13 @@ AI tools were used to help plan the architecture, draft repetitive scaffolding, 
 ## Verification
 
 ```bash
-cd backend/TaskTracker.Api
-dotnet build
-
-cd ../TaskTracker.Api.Tests
-dotnet test
-
-cd ../../frontend
-npm run build
+dotnet test backend/TaskTracker.slnx
+npm --prefix frontend run build
+docker compose config --quiet
+docker compose up --build -d
+curl http://localhost:5172/api/categories
+curl http://localhost:5173/api/categories
+curl http://localhost:5172/openapi/v1.json
 ```
 
-The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, duplicate-category conflicts, and assistant input validation.
+The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, duplicate-category conflicts, assistant input validation, and assistant normalization rules. Docker verification separately confirms the real API container, SQLite volume, frontend container, Nginx proxy, and OpenAPI endpoint.

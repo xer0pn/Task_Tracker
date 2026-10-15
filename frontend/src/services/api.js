@@ -21,7 +21,7 @@ export const categoryApi = {
 }
 
 export const assistantApi = {
-  createTaskDraft: (prompt) => api.post('/assistant/tasks', { prompt }),
+  createTaskDraft: (prompt) => api.post('/tasks/ai-suggest', { prompt }),
 }
 
 // Shared app-level error state for failures that affect an optional service.

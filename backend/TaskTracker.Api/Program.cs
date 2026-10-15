@@ -19,10 +19,7 @@ builder.Services.AddCors(options => options.AddPolicy("Frontend", policy => poli
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
 
 app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
 {
