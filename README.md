@@ -1,16 +1,37 @@
 # Task Tracker
 
-A small full-stack task tracker built for the developer take-home assignment. It uses a Vue 3 frontend, an ASP.NET Core Web API, EF Core, and SQLite. The project favors a complete, explainable end-to-end flow over unnecessary framework complexity.
+Task Tracker is a focused workspace for organizing tasks, monitoring progress, and turning natural-language requests into reviewable task drafts. It is built as a full-stack application with a Vue frontend, an ASP.NET Core API, Entity Framework Core, and SQLite persistence.
+
+## Highlights
+
+- Searchable and filterable task list with pagination
+- Task creation, editing, deletion, and quick status updates
+- Categories with task counts
+- Dashboard summaries for status, priority, upcoming work, and overdue tasks
+- Optional AI-assisted task drafting with review before saving
+- English and Arabic interface with full RTL layout support
+- API validation, consistent error responses, and OpenAPI documentation
+
+## Technology
+
+- Vue 3 with the Composition API and Vite
+- ASP.NET Core Web API on .NET 10
+- Entity Framework Core with migrations
+- SQLite for straightforward local persistence
+- Axios for frontend API communication
+- Docker Compose for repeatable local startup
 
 ## Requirements
+
+For local development, install:
 
 - .NET SDK 10 or later
 - Node.js 20 or later
 - npm 10 or later
 
-SQLite is created as a local `tasktracker.db` file, so no separate database server is required.
+Docker Desktop is required only if you want to run the containerized stack.
 
-## Quick start with Docker
+## Run with Docker
 
 From the repository root:
 
@@ -18,33 +39,31 @@ From the repository root:
 docker compose up --build
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The frontend container serves the Vue app and proxies `/api` requests to the API container on port 5172. The API applies the checked-in migration and seed data when it starts.
+Then open [http://localhost:5173](http://localhost:5173).
 
-To run in the background:
+The frontend is served by its container and forwards `/api` requests to the API container. The API initializes the database schema and seed data on startup. The database is stored in a named Docker volume so it survives normal container restarts.
+
+Run in the background:
 
 ```bash
 docker compose up --build -d
 ```
 
-Stop the stack with `docker compose down`. The SQLite database is stored in the named `tasktracker-data` volume and survives normal container restarts. Use `docker compose down -v` only when you intentionally want to delete the Docker database.
-
-## Optional AI assistant
-
-The dashboard includes an optional assistant that turns a natural-language request into a reviewable task draft. It does not write to the database until the user confirms the draft.
-
-To enable it locally, copy the root environment template and add a key:
+Stop the stack:
 
 ```bash
-cp .env.example .env
+docker compose down
 ```
 
-The Docker Compose configuration passes `OPENAI_API_KEY` and `OPENAI_MODEL` to the API. Without a key or available API quota, the assistant returns a controlled temporary-unavailable state; the core task tracker continues to work normally.
+Remove the persistent Docker database only when intentionally resetting local data:
 
-The assistant uses structured JSON output with a strict schema. The API still validates and normalizes priority casing/synonyms, parses dates, and maps categories case-insensitively. A category that does not exist is never created automatically: the draft asks the user to choose an existing category before saving.
+```bash
+docker compose down -v
+```
 
-The bonus endpoint is `POST /api/tasks/ai-suggest`. The older `/api/assistant/tasks` route remains as a compatibility alias. The assistant returns a draft only; the user reviews it and confirms before the normal task-create endpoint is called.
+## Run locally
 
-## Run the API
+Start the API:
 
 ```bash
 cd backend/TaskTracker.Api
@@ -52,18 +71,9 @@ dotnet restore
 dotnet run
 ```
 
-The API runs at `http://localhost:5172`. OpenAPI is available at `http://localhost:5172/openapi/v1.json` whenever the API is running.
+The API runs at `http://localhost:5172`. OpenAPI is available at `http://localhost:5172/openapi/v1.json` while the API is running.
 
-The application applies the checked-in EF Core migration on startup and seeds three categories and ten sample tasks. To create or apply migrations manually:
-
-```bash
-dotnet ef migrations add MigrationName
-dotnet ef database update
-```
-
-## Run the frontend
-
-In a second terminal, if you are not using Docker:
+In a second terminal, start the frontend:
 
 ```bash
 cd frontend
@@ -72,66 +82,140 @@ cp .env.example .env
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal, normally `http://localhost:5173`.
+The frontend normally runs at `http://localhost:5173`.
 
-After changing code, rebuild the affected service with Docker:
+## Database and migrations
+
+The API applies pending Entity Framework Core migrations and seed data when it starts. To manage migrations manually from the API project directory:
 
 ```bash
-docker compose up --build frontend  # frontend changes
-docker compose up --build api       # backend changes
-docker compose up --build           # changes affecting both services
+cd backend/TaskTracker.Api
+dotnet ef database update
 ```
 
-The frontend includes an English/Arabic toggle. Arabic changes the whole application to RTL, including navigation, forms, tables, dashboard panels, and the AI assistant. The selected language is saved in browser local storage.
+To create a new migration after changing the data model:
 
-## Project structure
+```bash
+dotnet ef migrations add MigrationName
+dotnet ef database update
+```
 
-- `backend/TaskTracker.Api/Controllers` contains HTTP routing and response behavior.
-- `backend/TaskTracker.Api/DTOs` defines the public API contract without exposing EF entities.
-- `backend/TaskTracker.Api/Entities` contains the database model and enums.
-- `backend/TaskTracker.Api/Data` configures EF Core, relationships, and seed data.
-- `backend/TaskTracker.Api/Services` contains database and business operations.
-- `frontend/src/views` contains the task and category screens.
-- `frontend/src/i18n.js` contains the small English/Arabic translation dictionary and global direction state.
-- `frontend/src/services/api.js` is the only frontend HTTP integration point.
+The initial migration creates the schema, three categories, and the sample tasks used by the application.
 
-Controllers are used instead of Minimal APIs because the application has several related endpoints, DTOs, validation rules, and service dependencies. The explicit controller structure makes responsibilities easier to review.
+## Configuration
 
-## Core features
+The frontend API URL is configured through `frontend/.env`:
 
-- Task list with search, status/category filters, and pagination
-- Create, edit, quick status update, and delete task flows
-- Category list with task counts and category creation
-- Client and server validation
-- Loading, empty, and API error states
-- SQLite persistence with EF Core migrations and seed data
-- OpenAPI documentation, CORS, and global error handling
-- English/Arabic toggle with full RTL layout support
+```env
+VITE_API_BASE_URL=http://localhost:5172/api
+```
 
-## Assumptions and limitations
+The optional assistant is configured through a root `.env` file. Start from the template:
 
-- This is a single-user local application; authentication is not included in the core version.
-- A task must belong to an existing category.
-- Category deletion is not exposed because it was not required and could orphan tasks.
-- Dates are stored as UTC timestamps by the API and displayed in the browser's local format.
-- Page size is limited to 50 records per request.
-- AI task drafting is optional and depends on an OpenAI API key; normal task creation remains available without it.
-- Authentication is not included because it was an optional bonus outside the core scope.
+```bash
+cp .env.example .env
+```
 
-## AI usage
+Then add your own key locally. Environment files containing secrets are ignored by Git and must never be committed.
 
-AI tools were used to help plan the architecture, draft repetitive scaffolding, review implementation details, and identify build issues. The submitted code is reviewed as part of the development process and is intended to be explainable during the follow-up call.
+## Optional assistant
 
-## Verification
+The dashboard assistant converts a natural-language request into a suggested task draft. The draft includes a title, priority, due date, and category where available. The user can review and adjust the suggestion before saving it through the normal task workflow.
+
+The assistant uses structured output and server-side normalization. Invalid, incomplete, or unavailable assistant responses are handled as controlled errors, so the main task tracker remains usable.
+
+The endpoint is:
+
+```text
+POST /api/tasks/ai-suggest
+```
+
+## Architecture
+
+The application keeps responsibilities separated:
+
+- `backend/TaskTracker.Api/Controllers` handles HTTP routes and response codes.
+- `backend/TaskTracker.Api/DTOs` defines request and response contracts.
+- `backend/TaskTracker.Api/Services` contains business and persistence operations.
+- `backend/TaskTracker.Api/Data` configures Entity Framework Core and seed data.
+- `backend/TaskTracker.Api/Entities` contains the persistence model and enums.
+- `frontend/src/views` contains the main screens.
+- `frontend/src/services/api.js` is the frontend HTTP integration point.
+- `frontend/src/i18n.js` manages translations and document direction.
+
+Controllers were chosen because the API has several related resources, request models, validation rules, and service dependencies. The explicit structure keeps routing, business logic, and persistence easy to review.
+
+## API behavior
+
+The API follows conventional resource-oriented behavior:
+
+- `GET` reads tasks and categories.
+- `POST` creates resources and returns their location.
+- `PUT` replaces a task.
+- `PATCH` changes only a task's status.
+- `DELETE` removes a task.
+
+Requests are validated at the API boundary, missing resources return `404`, duplicate category names return `409`, and unexpected failures are converted into clean JSON error responses.
+
+## Testing and verification
+
+Run the backend test suite:
 
 ```bash
 dotnet test backend/TaskTracker.slnx
-npm --prefix frontend run build
-docker compose config --quiet
-docker compose up --build -d
-curl http://localhost:5172/api/categories
-curl http://localhost:5173/api/categories
-curl http://localhost:5172/openapi/v1.json
 ```
 
-The API test project uses `WebApplicationFactory` with an isolated in-memory SQLite database. It exercises the real HTTP pipeline and verifies task listing, filtering, paging, lookup, creation, updates, status changes, deletion, validation errors, category counts, duplicate-category conflicts, assistant input validation, and assistant normalization rules. Docker verification separately confirms the real API container, SQLite volume, frontend container, Nginx proxy, and OpenAPI endpoint.
+Build the frontend:
+
+```bash
+npm --prefix frontend run build
+```
+
+Validate the Compose configuration:
+
+```bash
+docker compose config --quiet
+```
+
+The API tests exercise the real HTTP pipeline with an isolated SQLite test database. They cover task and category operations, filtering, paging, validation, conflicts, assistant input, and assistant normalization.
+
+## Project layout
+
+```text
+backend/
+  TaskTracker.Api/          API, services, entities, migrations
+  TaskTracker.Api.Tests/    API and service behavior tests
+frontend/
+  src/                      Vue application source
+  public/                   Static assets
+docs/
+  screenshots/              Product screenshots
+```
+
+## Screenshots
+
+![Dashboard](docs/screenshots/01-dashboard.png)
+![Task list](docs/screenshots/02-task-list.png)
+![Create task](docs/screenshots/03-create-task.png)
+![AI draft](docs/screenshots/04-ai-draft.png)
+![Arabic RTL dashboard](docs/screenshots/05-arabic-rtl-dashboard.png)
+
+## Future improvements
+
+With additional time, I would add authentication and authorization, an audit trail for changes, PostgreSQL or SQL Server support for production deployments, backups and monitoring, grouped work views such as projects or boards, and automated frontend browser tests.
+
+## Optional capabilities included
+
+The project includes these additional capabilities:
+
+- AI-assisted task drafting with structured output and review before saving
+- Dashboard summaries for task status, priority, categories, and overdue work
+- Arabic and English language support with full RTL layout handling
+- Automated API tests using an isolated SQLite test database
+- Docker Compose startup for the frontend and API
+
+Simple JWT authentication is intentionally not included in this version.
+
+## AI-assisted development
+
+ChatGPT/Codex was used for planning, repetitive scaffolding, implementation review, troubleshooting, and test-case suggestions. The code was reviewed, tested, and kept intentionally straightforward so the architecture and trade-offs can be explained clearly.
