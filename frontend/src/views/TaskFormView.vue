@@ -10,7 +10,7 @@ const form = reactive({ title: '', description: '', status: 'Todo', priority: 'M
 async function load() {
   try {
     categories.value = (await categoryApi.list()).data
-    if (isEditing) { const task = (await taskApi.get(route.params.id)).data; Object.assign(form, { ...task, dueDate: task.dueDate?.slice(0, 10) || '' }) }
+    if (isEditing) { const task = (await taskApi.get(route.params.id)).data; Object.assign(form, { ...task, description: task.description || '', dueDate: task.dueDate?.slice(0, 10) || '' }) }
     else if (categories.value.length) form.categoryId = categories.value[0].id
   } catch (requestError) { error.value = getApiError(requestError, t('unableLoad')) }
 }
@@ -21,7 +21,7 @@ async function submit() {
   if (!form.categoryId) { error.value = t('categoryRequired'); return }
   loading.value = true
   try {
-    const payload = { ...form, title: form.title.trim(), description: form.description.trim() || null, categoryId: Number(form.categoryId), dueDate: form.dueDate || null }
+    const payload = { ...form, title: form.title.trim(), description: (form.description || '').trim() || null, categoryId: Number(form.categoryId), dueDate: form.dueDate || null }
     if (isEditing) await taskApi.update(route.params.id, payload); else await taskApi.create(payload)
     router.push('/tasks')
   } catch (requestError) { error.value = getApiError(requestError, t('unableSave')) } finally { loading.value = false }
