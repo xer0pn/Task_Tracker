@@ -194,10 +194,24 @@ docs/
 
 ## Screenshots
 
-![Dashboard](docs/screenshots/01-dashboard.png)
+### 1. Dashboard overview
+
+![Dashboard overview](docs/screenshots/01-dashboard.png)
+
+### 2. Task list, filters, statuses, and pagination
+
 ![Task list](docs/screenshots/02-task-list.png)
-![Create task](docs/screenshots/03-create-task.png)
-![AI draft](docs/screenshots/04-ai-draft.png)
+
+### 3. Create task form
+
+![Create task form](docs/screenshots/03-create-task.png)
+
+### 4. AI-generated task draft before saving
+
+![AI task draft](docs/screenshots/04-ai-draft.png)
+
+### 5. Arabic dashboard with RTL layout
+
 ![Arabic RTL dashboard](docs/screenshots/05-arabic-rtl-dashboard.png)
 
 ## Future improvements
